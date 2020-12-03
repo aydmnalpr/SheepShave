@@ -5,11 +5,15 @@ using UnityEngine;
 
 public class Shaver : MonoBehaviour
 {
+    public GameObject levelCompletedEffect;
     public ParticleSystem particle;
+    public GameObject furs;
     private Vector3 offset;
     private float zCoord;
     Camera cam;
     Transform top;
+
+    public static Action OnGameWin = delegate { };
 
     private void Awake()
     {
@@ -43,18 +47,33 @@ public class Shaver : MonoBehaviour
         if (Physics.Raycast(top.position, -transform.forward, out hit, 100))
         {
             particle.Emit(5);
-            //Destroy(hit.transform.gameObject);
-            Rigidbody hitObject = hit.transform.gameObject.GetComponent<Rigidbody>();
-            hitObject.isKinematic = false;
-            int random = UnityEngine.Random.Range(8, 15);
-            hitObject.AddForce(new Vector3(random, random, 0), ForceMode.Impulse);
-            //Handheld.Vibrate();
 
+            GameObject hitGameObject = hit.transform.gameObject;
+            Rigidbody hitObjectRB = hitGameObject.GetComponent<Rigidbody>();
+            hitObjectRB.isKinematic = false;
+
+            int random = UnityEngine.Random.Range(8, 15);
+            hitObjectRB.AddForce(new Vector3(random, random, 0), ForceMode.Impulse);
+            //Handheld.Vibrate();
+            StartCoroutine(DeleteFur(hitGameObject));
+
+        }
+
+        if (furs.transform.childCount <= 0)
+        {
+            OnGameWin.Invoke();
+            levelCompletedEffect.SetActive(true);
         }
 
         Debug.DrawRay(top.position, -transform.forward, Color.green, .01f, false);
         
 
+    }
+
+    IEnumerator DeleteFur(GameObject go)
+    {
+        yield return new WaitForSeconds(1);
+        Destroy(go);
     }
 
 
